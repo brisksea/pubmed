@@ -1,0 +1,127 @@
+<html>
+
+<head>
+    <!-- 引入 echarts.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/3.2.3/echarts.min.js"></script>
+</head>
+
+<body>
+
+<div id="main" style="width: 90%;height:90%;"></div>
+
+ <script type="text/javascript">
+ 
+ 
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+
+    option = {
+    	backgroundColor: 'white',//背景色
+        title : {
+        text: 'GeneRelation:{{query}}',
+        subtext: 'Data from Pubmed',
+        x:'right',
+        y:'bottom'
+    },
+        animation: true,
+        series : [
+            {
+            
+             itemStyle: {
+                normal: {
+                    label: {
+                        show: true,
+                        textStyle: {
+                            color: '#333'
+                        }
+                    },
+                    nodeStyle : {
+                        brushType : 'both',
+                        borderColor : 'rgba(255,215,0,0.4)',
+                        borderWidth : 1
+                    },
+                    linkStyle: {
+                        type: 'curve'
+                    }
+                },
+                emphasis: {
+                    label: {
+                        show: false
+                        // textStyle: null      // 默认使用全局文本样式，详见TEXTSTYLE
+                    },
+                    nodeStyle : {
+                        //r: 30
+                    },
+                    linkStyle : {}
+                }
+            },
+            useWorker: false,
+            minRadius : 15,
+            maxRadius : 50,
+            gravity: 0,
+            scaling: 1.1,
+            
+            force: {
+                // gravity: 0  //引力
+                edgeLength: 20, //默认距离
+                repulsion: 20 //斥力
+            },        
+                      
+            
+                name: 'Les Miserables',
+                type: 'graph',
+                layout: 'force',
+                nodes: [
+                {{geneSet|safe}}
+                ],
+                links:[
+             {{geneRelations|safe}}
+              ],          
+                roam: true,
+                label: {
+                    normal: {
+                        position: 'right'
+                    }
+                },
+                force: {
+                    repulsion: 100
+                }
+            }
+        ]
+    };
+
+    myChart.setOption(option);
+	
+
+myChart.on('click', function (params) {
+	var ecConfig = echarts.config; 
+	 var links = option.series[0].links;
+    var nodes = option.series[0].nodes;
+	var data = params.data;
+    if (params.componentType === 'markPoint') {
+        // 点击到了 markPoint 上
+        if (params.seriesIndex === 5) {
+            // 点击到了 index 为 5 的 series 的 markPoint 上。
+        }
+    }
+    else if (params.componentType === 'series') {
+        if (params.seriesType === 'graph') {
+            if (params.dataType === 'edge') {
+        		var sourceNode = nodes.filter(function (n) {return n.name == data.source})[0];
+        		var targetNode = nodes.filter(function (n) {return n.name == data.target})[0];
+        		console.log("选中了边 " + sourceNode.name + ' -> ' + targetNode.name + ' (' + data.weight + ')');
+window.open('http://127.0.0.1:8000/sent?gene1='+sourceNode.name+'&gene2='+ targetNode.name,'','height=500,width=611,scrollbars=yes,status =yes');
+    		} else { // 点击的是点
+        		console.log("选中了" + data.name + '(' + data.value + ')');
+	window.open('http://127.0.0.1:8000/gene?gene='+data.name,'','height=500,width=611,scrollbars=yes,status =yes');
+    		}
+        }
+    }
+ 
+});
+	
+	
+	
+</script>
+</body>
+</html>
