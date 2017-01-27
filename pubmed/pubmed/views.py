@@ -14,7 +14,7 @@ from django.http import HttpResponseRedirect
 def getConn() :
     connection = pymysql.connect(host='localhost',
                              user='root',
-                             password='',
+                             password='pubmed',
                              db='pubmed',
                              charset='utf8',
                              cursorclass=pymysql.cursors.DictCursor)
