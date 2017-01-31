@@ -24,5 +24,7 @@ urlpatterns = [
     url(r'^result$', views.result),
     url(r'^sent$', views.sent),
     url(r'^gene$', views.gene),
-    url(r'^upload$', views.uploadfile)
+    url(r'^upload$', views.uploadfile),
+    url(r'^ppinetwork$', views.ppinetwork)
 ]
+
