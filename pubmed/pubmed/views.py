@@ -366,17 +366,18 @@ def uploadfile(request):
     return HttpResponse(ppistr)
 
 def ppinetwork(request) :
+    initName2idDict()
     fin = open(r"/home/zhengqi/project/pubmed/ppi.txt")
     geneSet = set()
     relationSet = {}
     for line in fin.readlines() :
         fields = line.strip().split('\t')
-        gene1 = fields[1]
-        gene2 = fields[2]
-        type = fields[3]
+        gene1 = name2id(fields[1])
+        gene2 = name2id(fields[2])
+        #type = fields[3]
         geneSet.add(gene1)
         geneSet.add(gene2)
-        relationSet[(gene1, gene2)] = type
+        relationSet[(gene1, gene2)] = 'type'
     nodeStr = ''
     count = 0
     for gene in geneSet :
