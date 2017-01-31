@@ -186,6 +186,31 @@ def result4(request):
 def sent(request):
     gene1 = request.GET['gene1']
     gene2 = request.GET['gene2']
+    if (gene1 > gene2) :
+        tmp = gene1
+        gene1 = gene2
+        gene2 = tmp
+        
+    conn = getConn();
+    sql = "select interaction.docId as docId, interaction.sentId as sentId, content from interaction, sentence "
+    sql += "where geneid1='%s' and geneid2='%s' and interaction.docId = sentence.docId and interaction.sentId = sentence.sentId" % (gene1, gene2)
+    rows = getResult(sql, conn)
+    content = '<html><head><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"><style>gene{color: red;font: bold;}</style></head>'
+    content += '<body><h3>Interaction between %s and %s</h1>' %(gene1, gene2)
+    content += '<ul class="list-group">'
+    for row in rows :
+        content += "<il class='list-group-item'><a href='https://www.ncbi.nlm.nih.gov/pubmed/%s'>%s</a>:%s</il>" % (row['docId'], row['docId'], row['content'])         
+    content += '</ul></body></html>'
+    return HttpResponse(content)        
+        
+    
+    
+    
+
+
+def sent2(request):
+    gene1 = request.GET['gene1']
+    gene2 = request.GET['gene2']
     fin = open(r"/home/zhengqi/project/pubmed/ppiresult.txt")
     rows = []
     for line in fin.readlines() :
