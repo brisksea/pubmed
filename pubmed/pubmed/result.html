@@ -110,10 +110,10 @@ myChart.on('click', function (params) {
         		var sourceNode = nodes.filter(function (n) {return n.name == data.source})[0];
         		var targetNode = nodes.filter(function (n) {return n.name == data.target})[0];
         		console.log("选中了边 " + sourceNode.name + ' -> ' + targetNode.name + ' (' + data.weight + ')');
-window.open('http://127.0.0.1:8000/sent?gene1='+sourceNode.name+'&gene2='+ targetNode.name,'','height=500,width=611,scrollbars=yes,status =yes');
+window.open('http://164.111.161.35:8000/sent?gene1='+sourceNode.name+'&gene2='+ targetNode.name,'','height=500,width=611,scrollbars=yes,status =yes');
     		} else { // 点击的是点
         		console.log("选中了" + data.name + '(' + data.value + ')');
-	window.open('http://127.0.0.1:8000/gene?gene='+data.name,'','height=500,width=611,scrollbars=yes,status =yes');
+	window.open('http://164.111.161.35:8000/gene?gene='+data.name,'','height=500,width=611,scrollbars=yes,status =yes');
     		}
         }
     }
