@@ -35,7 +35,7 @@ def getResult(sql, connection) :
 
  
 def index(request): 
-    fd = open(r'c:\project\pubmed\pubmed\pubmed\index.html', 'r')   
+    fd = open(r'/home/zhengqi/project/pubmed/web/pubmed/pubmed/index.html', 'r')   
     return HttpResponse(fd.read())
     
 def query(request):
@@ -116,7 +116,7 @@ def sent1(request):
     content = content.replace(gene2, '<mark>%s</mark>' % gene2)
     return HttpResponse(content)   
          
-def sent(request):
+def sent11(request):
     gene1 = request.GET['gene1']
     gene2 = request.GET['gene2']
     conn = getConn()
@@ -183,6 +183,24 @@ def result4(request):
     
     return HttpResponse(rstr)
 
+def sent(request):
+    gene1 = request.GET['gene1']
+    gene2 = request.GET['gene2']
+    fin = open(r"/home/zhengqi/project/pubmed/ppiresult.txt")
+    rows = []
+    for line in fin.readlines() :
+         sgene1, sgene2, pid, sent = line.split("\t")
+         #if ((sgene1 == gene1 and sgene2 == gene2) or (sgene1 == gene2 and sgene2 == gene1)) :
+         if (gene1 == gene1) :
+            rows.append("<gene>%s</gene>:<gene>%s</gene>:<a href='https://www.ncbi.nlm.nih.gov/pubmed/%s'>%s</a>:%s" % (sgene1, sgene2, pid, pid, sent))
+    content = '<html><head><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"><style>gene{color: red;font: bold;}</style></head>'
+    content += '<body><h3>Interaction between %s and %s</h1>' %(gene1, gene2)
+    content += '<ul class="list-group">'
+    for row in rows :
+        content += '<il class="list-group-item">' + row + "</il>"            
+    content += '</ul></body></html>'
+    fin.close()
+    return HttpResponse(content) 
 
 def result(request):
     disease = request.GET['query']
@@ -321,6 +339,41 @@ def uploadfile(request):
         print("%s : %s <br>" % (fields[0], fields[1]))
         getRelation(fields[0], fields[1])
     return HttpResponse(ppistr)
+
+def ppinetwork(request) :
+    fin = open(r"/home/zhengqi/project/pubmed/ppi.txt")
+    geneSet = set()
+    relationSet = {}
+    for line in fin.readlines() :
+        fields = line.strip().split('\t')
+        gene1 = fields[1]
+        gene2 = fields[2]
+        type = fields[3]
+        geneSet.add(gene1)
+        geneSet.add(gene2)
+        relationSet[(gene1, gene2)] = type
+    nodeStr = ''
+    count = 0
+    for gene in geneSet :
+        count += 1
+        if count > 1 : nodeStr += "," 
+        nodeStr += '{category:0,name:"%s",value:1}' % gene  
+    
+    relationStr = ''
+    count = 0
+    for relation in relationSet.keys() :        
+        count += 1
+        if count > 1 : relationStr += "," 
+        relationStr += '{source:"%s", target:"%s", weight:%s, lineStyle:{normal:{color:\'blue\'}}}' % (relation[0], relation[1], '1')
+        #relationStr += '{source:"%s", target:"%s", weight:%s, lineStyle:{normal:{color:\'blue\'}}}' % (relation[0], relation[1], relationSet[relation])
+        #relationStr += '{source:"%s", target:"%s", weight:%s}' % (relation[0], relation[1], relationSet[relation])
+    
+    fp = open(r'/home/zhengqi/project/pubmed/web/pubmed/pubmed/result.html')
+    t = template.Template(fp.read())
+    rstr = t.render(Context({'geneSet':nodeStr, 'geneRelations':relationStr, 'query':'query'}))
+    fin.close()
+    fp.close()
+    return HttpResponse(rstr)    
 
 
     
