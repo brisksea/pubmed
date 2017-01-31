@@ -184,22 +184,39 @@ def result4(request):
     return HttpResponse(rstr)
 
 def sent(request):
+    initName2idDict()
     gene1 = request.GET['gene1']
     gene2 = request.GET['gene2']
-    if (gene1 > gene2) :
-        tmp = gene1
-        gene1 = gene2
-        gene2 = tmp
+    geneid1 = name2id(gene1)
+    geneid2 = name2id(gene2)
+    if (geneid1 > geneid2) :
+        tmp = geneid1
+        geneid1 = geneid2
+        geneid2 = tmp
         
     conn = getConn();
     sql = "select interaction.docId as docId, interaction.sentId as sentId, content from interaction, sentence "
-    sql += "where geneid1='%s' and geneid2='%s' and interaction.docId = sentence.docId and interaction.sentId = sentence.sentId" % (gene1, gene2)
+    sql += "where geneid1='%s' and geneid2='%s' and interaction.docId = sentence.docId and interaction.sentId = sentence.sentId" % (geneid1, geneid2)
     rows = getResult(sql, conn)
     content = '<html><head><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"><style>gene{color: red;font: bold;}</style></head>'
-    content += '<body><h3>Interaction between %s and %s</h1>' %(gene1, gene2)
+    content += '<body><h3>Interaction between %s and %s</h1>' % (geneid1, geneid2)
     content += '<ul class="list-group">'
     for row in rows :
-        content += "<il class='list-group-item'><a href='https://www.ncbi.nlm.nih.gov/pubmed/%s'>%s</a>:%s</il>" % (row['docId'], row['docId'], row['content'])         
+            sql = "select start, end from mention where docId = '%s' and sentId = %s and (dbid='%s' or dbid='%s')" % (row['docId'], row['sentId'], geneid1, geneid2)
+            rows1 = getResult(sql, conn)
+            pairs = []
+            for row1 in rows1 :
+                pairs.append((row1['start'], row1['end']))
+            sorted(pairs, key = lambda pairs : pairs[0])
+            sent = row['content']
+            pre = 0
+            marksent = ''
+            for pair in pairs :
+                marksent += sent[pre : pair[0]]
+                marksent += "<gene>%s</gene>" % sent[pair[0] : pair[1]]
+                pre = pair[1]
+                marksent += sent[pair[1] : len(sent)]
+            content += "<il class='list-group-item'><a href='https://www.ncbi.nlm.nih.gov/pubmed/%s'>%s</a>:%s</il>" % (row['docId'], row['docId'], marksent)         
     content += '</ul></body></html>'
     return HttpResponse(content)        
         
@@ -328,7 +345,7 @@ def getRelation(gene1, gene2) :
     return len(rows)
 
 def initName2idDict():
-    fin = open(r"C:\0research\data\Homo_sapiens.gene_info", "r")
+    fin = open(r"/data/zhengqi/Homo_sapiens.gene_info", "r")
     lineno = 0
     for line in fin :
         lineno += 1
@@ -338,7 +355,7 @@ def initName2idDict():
         
 def initId2nameDict():
     global geneDict
-    fin = open(r"C:\0research\data\Homo_sapiens.gene_info", "r")
+    fin = open(r"/data/zhengqi/Homo_sapiens.gene_info", "r")
     lineno = 0
     for line in fin :
         lineno += 1
@@ -366,14 +383,15 @@ def uploadfile(request):
     return HttpResponse(ppistr)
 
 def ppinetwork(request) :
-    initName2idDict()
+    gene1 = request.GET['gene1']
+    gene2 = request.GET['gene2']
     fin = open(r"/home/zhengqi/project/pubmed/ppi.txt")
     geneSet = set()
     relationSet = {}
     for line in fin.readlines() :
         fields = line.strip().split('\t')
-        gene1 = name2id(fields[1])
-        gene2 = name2id(fields[2])
+        gene1 = fields[1]
+        gene2 = fields[2]
         #type = fields[3]
         geneSet.add(gene1)
         geneSet.add(gene2)
@@ -394,7 +412,7 @@ def ppinetwork(request) :
         #relationStr += '{source:"%s", target:"%s", weight:%s, lineStyle:{normal:{color:\'blue\'}}}' % (relation[0], relation[1], relationSet[relation])
         #relationStr += '{source:"%s", target:"%s", weight:%s}' % (relation[0], relation[1], relationSet[relation])
     
-    fp = open(r'/home/zhengqi/project/pubmed/web/pubmed/pubmed/result.html')
+    fp = open(r'/home/zhengqi/project/pubmed/pubmed/pubmed/result.html')
     t = template.Template(fp.read())
     rstr = t.render(Context({'geneSet':nodeStr, 'geneRelations':relationStr, 'query':'query'}))
     fin.close()
