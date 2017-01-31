@@ -61,7 +61,7 @@ def createDocXml(infile, outfile) :
     with open(infile, 'r') as fin:
       for line in fin:
         lineNo += 1
-        line = html.escape(line.strip())
+        #line = html.escape(line.strip())
         if lineNo == 1 : 
             strs = line.split("|")
             doc = "<doc><field name='id'>%s</field>" % strs[0]
@@ -115,7 +115,7 @@ def createSenXml(infile, outfile) :
     with open(infile, 'r') as fin:
         for line in fin:
             lineNo += 1
-            line = html.escape(line.strip())
+            #line = html.escape(line.strip())
             if lineNo == 1 :  # title
                 sentList.clear()
                 strs = line.split("|")
